@@ -4,6 +4,8 @@ namespace ZendLogPushover\Writer;
 
 use Pushy;
 use Zend\Log\Formatter\FormatterInterface;
+use ZendLogPushover\Message\DefaultMessageFactory;
+use ZendLogPushover\Message\MessageFactoryInterface;
 use ZendLogPushover\PushoverLoggerException;
 
 /**
@@ -28,6 +30,11 @@ class Pushover extends \Zend\Log\Writer\AbstractWriter {
 	protected $formatter;
 
 	/**
+	 * @var MessageFactoryInterface
+	 */
+	protected $messageFactory;
+
+	/**
 	 * Constructor
 	 *
 	 * Set options for a writer. Accepted options are:
@@ -45,6 +52,8 @@ class Pushover extends \Zend\Log\Writer\AbstractWriter {
 				'format' => "Priority: %priorityName% (%priority%)\nDate: %timestamp%\n%message% %extra%",
 			]);
 		}
+
+		$this->messageFactory = new DefaultMessageFactory();
 	}
 
 	/**
@@ -76,6 +85,20 @@ class Pushover extends \Zend\Log\Writer\AbstractWriter {
 	}
 
 	/**
+	 * @return MessageFactoryInterface
+	 */
+	public function getMessageFactory() {
+		return $this->messageFactory;
+	}
+
+	/**
+	 * @param MessageFactoryInterface $messageFactory
+	 */
+	public function setMessageFactory(MessageFactoryInterface $messageFactory) {
+		$this->messageFactory = $messageFactory;
+	}
+
+	/**
 	 * @param array $event
 	 * @throws PushoverLoggerException
 	 */
@@ -91,24 +114,11 @@ class Pushover extends \Zend\Log\Writer\AbstractWriter {
 		$line = $this->formatter->format($event);
 
 		// Message
-		$message = $this->createMessage($line);
+		$message = $this->messageFactory->factory($line);
+		$message->setUser($this->user);
 
 		// Send
 		$this->client->sendMessage($message);
 	}
 
-	/**
-	 * @param string $line
-	 * @return Pushy\Message
-	 */
-	protected function createMessage($line){
-
-		$message = new Pushy\Message($line);
-		$message->setPriority(new Pushy\Priority\HighPriority());
-		$message->setTitle("Log from your application");
-		$message->setUser($this->user);
-		$message->setSound(new Pushy\Sound\SirenSound());
-
-		return $message;
-	}
 }

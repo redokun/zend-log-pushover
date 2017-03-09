@@ -3,7 +3,10 @@
 namespace ZendLogPushoverTest\Writer;
 
 use Pushy\Message;
+use Pushy\User;
 use Zend\Log\Logger;
+use ZendLogPushover\Message\DefaultMessageFactory;
+use ZendLogPushover\Message\MessageFactoryInterface;
 use ZendLogPushover\Writer\Pushover;
 
 class PushoverTest extends \PHPUnit_Framework_TestCase {
@@ -50,6 +53,24 @@ class PushoverTest extends \PHPUnit_Framework_TestCase {
 		$writer->setUser($user);
 		$writer->setClient($client);
 
+		$this->assertInstanceOf(MessageFactoryInterface::class, $writer->getMessageFactory());
+
+		// Test message factory
+
+		/** @var \PHPUnit_Framework_MockObject_MockObject|DefaultMessageFactory $messageFactory */
+		$messageFactory = $this->getMockBuilder(DefaultMessageFactory::class)
+			->disableOriginalConstructor()
+			->getMock();
+
+		$messageFactory->expects($this->once())
+			->method("factory")
+			->willReturnCallback(function(){
+				return new Message("Test message");
+			});
+
+		$writer->setMessageFactory($messageFactory);
+
+		// Call
 		$this->invokeMethod($writer, "doWrite", [$this->getEventData()]);
 	}
 

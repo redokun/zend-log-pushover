@@ -20,6 +20,5 @@ Example (send only CRIT errors and above to Pushover):
 ## TODO
 
 - Adopt a defer mechanism (queue messages and send them all in a single batch on script shutdown)
-- Use Factory pattern to create the Message object, so it's easier to customize the message
 - Better default message title
 
