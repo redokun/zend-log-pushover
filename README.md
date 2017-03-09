@@ -2,12 +2,24 @@
 
 (ZF Logger 2.5 is used in Zend Framework 2.*)
 
-This library is in early stage and requires a bit of work to be 'production-ready', but I'm releasing it anyway.
+Send application log messages to [Pushover](https://pushover.net)
+
+Example (send only CRIT errors and above to Pushover):
+
+
+    $pushoverWriter = new \ZendLogPushover\Writer\Pushover();
+    $pushoverWriter->setUser(new \Pushy\User("userKey"));
+    $pushoverWriter->setClient(new \Pushy\Client("clientKey"));
+    
+    $pushoverWriter->addFilter(\Zend\Log\Logger::CRIT);
+    
+    // Add writer to zf logger
+    $logger = new \Zend\Log\Logger();
+    $logger->addWriter($pushoverWriter);
 
 ## TODO
 
 - Adopt a defer mechanism (queue messages and send them all in a single batch on script shutdown)
 - Use Factory pattern to create the Message object, so it's easier to customize the message
 - Better default message title
-- Add some tests maybe
 
