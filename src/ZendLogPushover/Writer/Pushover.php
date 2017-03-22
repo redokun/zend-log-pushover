@@ -35,6 +35,11 @@ class Pushover extends \Zend\Log\Writer\AbstractWriter {
 	protected $messageFactory;
 
 	/**
+	 * @var string[]
+	 */
+	protected $messages;
+
+	/**
 	 * Constructor
 	 *
 	 * Set options for a writer. Accepted options are:
@@ -54,6 +59,7 @@ class Pushover extends \Zend\Log\Writer\AbstractWriter {
 		}
 
 		$this->messageFactory = new DefaultMessageFactory();
+		$this->messages = [];
 	}
 
 	/**
@@ -99,6 +105,13 @@ class Pushover extends \Zend\Log\Writer\AbstractWriter {
 	}
 
 	/**
+	 * @return string[]
+	 */
+	public function getMessages() {
+		return $this->messages;
+	}
+
+	/**
 	 * @param array $event
 	 * @throws PushoverLoggerException
 	 */
@@ -113,12 +126,32 @@ class Pushover extends \Zend\Log\Writer\AbstractWriter {
 
 		$line = $this->formatter->format($event);
 
-		// Message
-		$message = $this->messageFactory->factory($line);
-		$message->setUser($this->user);
+		$this->messages[] = $line;
+	}
 
-		// Send
-		$this->client->sendMessage($message);
+	/**
+	 * Flush message queue
+	 * @return void
+	 */
+	public function flushMessages(){
+		foreach ($this->messages as $message) {
+
+			// Message
+			$notification = $this->messageFactory->factory($message);
+			$notification->setUser($this->user);
+
+			// Send
+			$this->client->sendMessage($notification);
+		}
+
+		$this->messages = [];
+	}
+
+	/**
+	 * Flush messages when object is destructed
+	 */
+	public function __destruct() {
+		$this->flushMessages();
 	}
 
 }

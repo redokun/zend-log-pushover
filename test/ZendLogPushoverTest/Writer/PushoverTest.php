@@ -45,10 +45,6 @@ class PushoverTest extends \PHPUnit_Framework_TestCase {
 		$client = $this->getClientMock();
 		$user = $this->getUserMock();
 
-		$client->expects($this->once())
-			->method('sendMessage')
-			->with($this->isInstanceOf(Message::class));
-
 		$writer = new Pushover();
 		$writer->setUser($user);
 		$writer->setClient($client);
@@ -72,6 +68,29 @@ class PushoverTest extends \PHPUnit_Framework_TestCase {
 
 		// Call
 		$this->invokeMethod($writer, "doWrite", [$this->getEventData()]);
+	}
+
+	public function testFlushQueue() {
+
+		$client = $this->getClientMock();
+		$user = $this->getUserMock();
+
+		$client->expects($this->once())
+			->method('sendMessage')
+			->with($this->isInstanceOf(Message::class));
+
+		$writer = new Pushover();
+		$writer->setUser($user);
+		$writer->setClient($client);
+
+		// Call doWrite
+		$this->invokeMethod($writer, "doWrite", [$this->getEventData()]);
+
+		$this->assertCount(1, $writer->getMessages());
+
+		$writer->flushMessages();
+
+		$this->assertCount(0, $writer->getMessages());
 	}
 
 	/**

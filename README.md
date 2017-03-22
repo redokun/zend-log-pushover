@@ -19,6 +19,5 @@ Example (send only CRIT errors and above to Pushover):
 
 ## TODO
 
-- Adopt a defer mechanism (queue messages and send them all in a single batch on script shutdown)
 - Better default message title
 
